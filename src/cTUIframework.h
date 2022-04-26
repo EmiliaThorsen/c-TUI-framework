@@ -16,8 +16,9 @@ struct content {
 
 
 struct split {
-    int *type; //array of the type of the splits
     int splits; //amout of splits
+    int *type; //array of the type of the splits
+    int *size; //the size of the splits in characters
     union container *split; //contents of the splits
 };
 
@@ -33,6 +34,9 @@ struct tab {
 struct TUI {
     int tabs; //the amount of tabs
     struct tab *tab; //array of tabs
+    int floatingWidth; //the width of the floating window (disabled if 0)
+    int floatingHeight; //the height of the floating window (disabled if 0)
+    union container *floatingWindow; //container for the floating window
     char *barRight; //text on the right side of the status bar
     char *barLeft; //text on the left side of the status bar
 };
