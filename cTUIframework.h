@@ -1,7 +1,7 @@
 int initTUI (); //initiate cTUI
 int destroyTUI(); //destroy cTUI
 int updateTUI(); //update keystroke handler
-int renderTUI(struct TUI tui); //render the TUI struct
+int renderTUI(); //render the TUI struct
 
 
 union container {

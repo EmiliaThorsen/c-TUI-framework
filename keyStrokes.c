@@ -1,9 +1,11 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <termios.h>
 #include <sys/select.h>
+#include <termios.h>
+#include <unistd.h>
+#include <stdio.h>
 
+
+char inChar;
+char oldestInChar;
 
 void nonblock(int state) {
     struct termios ttystate;
@@ -30,24 +32,15 @@ int kbhit() {
 }
 
 
-int initTUI() {
-    nonblock(1);
-    return 0;
-}
-
-
-int destroyTUI() {
-    nonblock(0);
-    return 0;
-}
-
-
-int updateTUI() {
-    char c;
+void pollKeyStrokes() {
     if (kbhit() != 0) {
-        c = fgetc(stdin); 
-        printf("user hit: %c\n", c);
+        inChar = fgetc(stdin);
+        oldestInChar = inChar;
     }
-    printf("asd\n");
-    return 0;
+    return;
+}
+
+
+char getOldestInChar() {
+    return oldestInChar;
 }
