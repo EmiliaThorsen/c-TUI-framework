@@ -1,9 +1,3 @@
-int initTUI (); //initiate cTUI
-int destroyTUI(); //destroy cTUI
-int updateTUI(); //update keystroke handler
-int renderTUI(); //render the TUI struct
-
-
 union container {
     struct split *split;
     struct content *content;
@@ -25,6 +19,7 @@ struct split {
 
 struct tab {
     char *name; //name of the tab
+    int nameLen; //lenght of the tab's name
     int type; //the type of content
     union container *content; //content of the tab, either content or a split
 };
@@ -40,3 +35,9 @@ struct TUI {
     char *barRight; //text on the right side of the status bar
     char *barLeft; //text on the left side of the status bar
 };
+
+
+int initTUI (); //initiate cTUI
+int destroyTUI(); //destroy cTUI
+int updateTUI(); //update keystroke handler
+int renderTUI(struct TUI); //render the TUI struct
