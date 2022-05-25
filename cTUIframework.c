@@ -7,7 +7,7 @@
 
 int screenRows;
 int screenCols;
-int tab = 1;
+int tab = 0;
 
 
 int initTUI() {
@@ -74,6 +74,37 @@ void writeVerticalLine(char *buffer, int x, int y, int lenght, char ch) {
 }
 
 
+//rendering functions
+void _contentRenderer(char *buffer, struct content contents, int x, int y, int height, int width) {
+    setChar(buffer, x, y, '>');
+    //writeTextBlock(buffer, x, y, height, width, contents.data);
+}
+
+
+void _splitRenderer(char *buffer, struct split split, int x, int y, int height, int width) {
+    int type = split.type;
+    int xOfset = x;
+    int yOfset = y;
+    for(int region = 0; region < split.splits; region++) {
+        if (type) {
+            if(split.split[region].type) {
+                _splitRenderer(buffer, *split.split[region].split, xOfset, yOfset, height, split.size[region]);
+            } else {
+                _contentRenderer(buffer, *split.split[region].content, xOfset, yOfset, height, split.size[region]);
+            }
+            xOfset += split.size[region];
+        } else {
+            if(split.split[region].type) {
+                _splitRenderer(buffer, *split.split[region].split, xOfset, yOfset, split.size[region], height);
+            } else {
+                _contentRenderer(buffer, *split.split[region].content, xOfset, yOfset, split.size[region], height);
+            }
+            yOfset += split.size[region];
+        }
+    }
+}
+
+
 int renderTUI(struct TUI tuiStruct) {
     //get screen size and initialize the screen string
     updateScreenSize();
@@ -85,7 +116,7 @@ int renderTUI(struct TUI tuiStruct) {
     //tab bar rendering
     int barPos = 0;
     for(int barTab = 0; barTab < tuiStruct.tabs; ++barTab) {
-        if (barTab == tab) {
+        if(barTab == tab) {
             setChar(screen, barPos, 0, '>');
             barPos += 1;
         }
@@ -95,7 +126,11 @@ int renderTUI(struct TUI tuiStruct) {
 
     //tab rendering
     struct tab currentTab = tuiStruct.tab[tab];
-
+    if(currentTab.content->type) {
+        _splitRenderer(screen, *currentTab.content->split, 0, 1, screenRows-4, screenCols);
+    } else {
+        _contentRenderer(screen, *currentTab.content->content, 0, 1, screenRows-4, screenCols);
+    }
 
     //status bar
     writeHorizontalLine(screen, 0, screenRows-2, screenCols, '#');
