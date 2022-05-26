@@ -133,6 +133,17 @@ int renderTUI(struct TUI tuiStruct) {
         _contentRenderer(screen, *currentTab.content->content, 0, 1, screenRows-4, screenCols);
     }
 
+    //floating window rendering
+    if(tuiStruct.floatingHeight != 0 && tuiStruct.floatingWidth != 0) {
+        int floatingX = screenCols/2 - tuiStruct.floatingWidth/2;
+        int floatingY = screenRows/2 - tuiStruct.floatingHeight/2;
+        struct container floatingWindow = *tuiStruct.floatingWindow;
+        if(floatingWindow.type) {
+            _splitRenderer(screen, *floatingWindow.split, floatingX, floatingY, tuiStruct.floatingWidth, tuiStruct.floatingHeight);
+        } else {
+            _contentRenderer(screen, *floatingWindow.content, floatingX, floatingY, tuiStruct.floatingWidth, tuiStruct.floatingHeight);
+        }
+    }
     //status bar
     writeLine(screen, 0, screenRows-2, tuiStruct.barLeft, strlen(tuiStruct.barLeft));
     int rightLen = strlen(tuiStruct.barRight);
