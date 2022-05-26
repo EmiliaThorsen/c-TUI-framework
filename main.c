@@ -37,7 +37,8 @@ int main() {
     tuiStruct.tab = tabs;
     tuiStruct.floatingWidth = 0;
     tuiStruct.floatingHeight = 0;
-
+    tuiStruct.barLeft = "left owo";
+    tuiStruct.barRight = "right UwU";
 
     while (1) {
         updateTUI();

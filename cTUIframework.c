@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <string.h>
 
 
 int screenRows;
@@ -133,7 +134,9 @@ int renderTUI(struct TUI tuiStruct) {
     }
 
     //status bar
-    writeHorizontalLine(screen, 0, screenRows-2, screenCols, '#');
+    writeLine(screen, 0, screenRows-2, tuiStruct.barLeft, strlen(tuiStruct.barLeft));
+    int rightLen = strlen(tuiStruct.barRight);
+    writeLine(screen, screenCols-rightLen, screenRows-2, tuiStruct.barRight, rightLen);
     setChar(screen, screenCols-1, screenRows-1, getOldestInChar());
 
     //clear and render screen
