@@ -9,26 +9,35 @@
 int screenRows;
 int screenCols;
 int tab = 0;
+char latestKeyStrokes[10];
 
 
-int initTUI() {
-
+void initTUI() {
+    latestKeyStrokes[0] = 'x';
     nonblock(1);
-    return 0;
 }
 
 
-int destroyTUI() {
+void destroyTUI() {
     nonblock(0);
-    return 0;
 }
 
 
-int updateTUI() {
-    pollKeyStrokes();
-    return 0;
+void updateTUI(struct keystrokes keyStrokes) {
+    struct inputKeys input = pollKeyStrokes();
+    for(int key = 0; key < input.inputs; key++) {
+        for(int keyStroke = 0; keyStroke < keyStrokes.keystorkes; keyStroke++) {
+            if(input.inKeys[key] == keyStrokes.keystrokeArray[keyStroke].key) {
+                if(keyStrokes.keystrokeArray[keyStroke].type) {
+                    // implement recursive keystrokes!
+                } else {
+                    latestKeyStrokes[0] = input.inKeys[key];
+                    keyStrokes.keystrokeArray[keyStroke].function();
+                }
+            }
+        }
+    }
 }
-
 
 
 void updateScreenSize() {
@@ -45,7 +54,8 @@ void setChar(char *buffer, int x, int y, char ch) {
 }
 
 
-void writeLine(char *buffer, int x, int y, char *str, int strLength) {
+void writeLine(char *buffer, int x, int y, char *str) {
+    int strLength = strlen(str);
     for (int ch = 0; ch < strLength; ch++) {
         buffer[x+ch+y*(screenCols+1)] = str[ch];
     }
@@ -61,15 +71,15 @@ void writeTextBlock(char *buffer, int x, int y, int lines, int cols, char *str[]
 }
 
 
-void writeHorizontalLine(char *buffer, int x, int y, int lenght, char ch) {
-    for (int col = 0; col < lenght; col++) {
+void writeHorizontalLine(char *buffer, int x, int y, int length, char ch) {
+    for (int col = 0; col < length; col++) {
         buffer[x+col+y*(screenCols+1)] = ch;
     }
 }
 
 
-void writeVerticalLine(char *buffer, int x, int y, int lenght, char ch) {
-    for (int row = 0; row < lenght; row++) {
+void writeVerticalLine(char *buffer, int x, int y, int length, char ch) {
+    for (int row = 0; row < length; row++) {
         buffer[x+(y+row)*(screenCols+1)] = ch;
     }
 }
@@ -106,7 +116,7 @@ void _splitRenderer(char *buffer, struct split split, int x, int y, int height, 
 }
 
 
-int renderTUI(struct TUI tuiStruct) {
+void renderTUI(struct TUI tuiStruct) {
     //get screen size and initialize the screen string
     updateScreenSize();
     int totalChars = screenRows*(screenCols+1)-1;
@@ -121,7 +131,7 @@ int renderTUI(struct TUI tuiStruct) {
             setChar(screen, barPos, 0, '>');
             barPos += 1;
         }
-        writeLine(screen, barPos, 0, tuiStruct.tab[barTab].name, tuiStruct.tab[barTab].nameLen);
+        writeLine(screen, barPos, 0, tuiStruct.tab[barTab].name);
         barPos += tuiStruct.tab[barTab].nameLen+1;
     }
 
@@ -144,13 +154,15 @@ int renderTUI(struct TUI tuiStruct) {
             _contentRenderer(screen, *floatingWindow.content, floatingX, floatingY, tuiStruct.floatingWidth, tuiStruct.floatingHeight);
         }
     }
-    //status bar
-    writeLine(screen, 0, screenRows-2, tuiStruct.barLeft, strlen(tuiStruct.barLeft));
-    int rightLen = strlen(tuiStruct.barRight);
-    writeLine(screen, screenCols-rightLen, screenRows-2, tuiStruct.barRight, rightLen);
-    setChar(screen, screenCols-1, screenRows-1, getOldestInChar());
 
+    //status bar
+    int rightLen = strlen(tuiStruct.barRight);
+    writeLine(screen, 0, screenRows-2, tuiStruct.barLeft);
+    writeLine(screen, screenCols-rightLen, screenRows-2, tuiStruct.barRight);
+
+    //keystroke indicator
+    int keystrokeIndicatorLen = strlen(latestKeyStrokes);
+    writeLine(screen, screenCols-keystrokeIndicatorLen, screenRows-1, latestKeyStrokes);
     //clear and render screen
     printf("\033[2J\033[H%s", screen);
-    return 0;
 }

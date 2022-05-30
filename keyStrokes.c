@@ -2,18 +2,16 @@
 #include <termios.h>
 #include <unistd.h>
 #include <stdio.h>
+#include "keyStrokes.h"
 
-
-char inChar;
-char oldestInChar;
 
 void nonblock(int state) {
     struct termios ttystate;
     tcgetattr(STDIN_FILENO, &ttystate);
-    if (state==1) {
+    if(state) {
         ttystate.c_lflag &= ~ICANON;
         ttystate.c_cc[VMIN] = 0;
-    } else if (state==0) {
+    } else {
         ttystate.c_lflag |= ICANON;
     }
     tcsetattr(STDIN_FILENO, TCSANOW, &ttystate);
@@ -32,15 +30,17 @@ int kbhit() {
 }
 
 
-void pollKeyStrokes() {
-    if (kbhit() != 0) {
-        inChar = fgetc(stdin);
-        oldestInChar = inChar;
+struct inputKeys pollKeyStrokes() {
+    char inChar[10];
+    int ch = 0;
+    while(1) {
+        if (kbhit() != 0 && ch < 10) {
+            inChar[ch] = fgetc(stdin);
+            ch++;
+        } else {break;}
     }
-    return;
-}
-
-
-char getOldestInChar() {
-    return oldestInChar;
+    struct inputKeys output;
+    output.inputs = ch;
+    output.inKeys = inChar;
+    return output;
 }

@@ -1,3 +1,8 @@
 void nonblock(int state);
-void pollKeyStrokes();
-char getOldestInChar();
+struct inputKeys pollKeyStrokes();
+
+
+struct inputKeys {
+    int inputs;
+    char *inKeys;
+};

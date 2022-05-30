@@ -1,3 +1,21 @@
+//keystroke defining structs
+struct keystroke {
+    char key;
+    int type;
+    union {
+        void (*function)();
+        struct keystrokes *recursiveKeystroke;
+    };
+};
+
+
+struct keystrokes {
+    int keystorkes;
+    struct keystroke *keystrokeArray;
+};
+
+
+//structure for defining the window layouts
 struct container {
     int type; //the type of content
     union {
@@ -27,7 +45,6 @@ struct tab {
 };
 
 
-//main struct for the TUI
 struct TUI {
     int tabs; //the amount of tabs
     struct tab *tab; //array of tabs
@@ -39,7 +56,7 @@ struct TUI {
 };
 
 
-int initTUI (); //initiate cTUI
-int destroyTUI(); //destroy cTUI
-int updateTUI(); //update keystroke handler
-int renderTUI(struct TUI); //render the TUI struct
+void initTUI (); //initiate cTUI
+void destroyTUI(); //destroy cTUI
+void updateTUI(struct keystrokes); //update keystroke handler
+void renderTUI(struct TUI); //render the TUI struct

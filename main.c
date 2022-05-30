@@ -4,6 +4,14 @@
 #include <unistd.h>
 
 
+int testThing = 10;
+
+
+void keytestidk() {
+    testThing += 10;
+}
+
+
 int main() {
     initTUI();
     //testing definitions
@@ -42,9 +50,18 @@ int main() {
     tuiStruct.floatingHeight = 10;
     tuiStruct.floatingWidth = 20;
     tuiStruct.floatingWindow = &asd;
+    
+    struct keystrokes keystroke;
+    keystroke.keystorkes = 1;
+    struct keystroke teststroke[1];
+    teststroke[0].key = 't';
+    teststroke[0].type = 0;
+    teststroke[0].function = keytestidk;
+    keystroke.keystrokeArray = teststroke;
 
     while (1) {
-        updateTUI();
+        tuiStruct.tab[0].content->split->size[0] = testThing;
+        updateTUI(keystroke);
         renderTUI(tuiStruct);
         usleep(50000);
     }
