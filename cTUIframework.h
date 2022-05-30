@@ -1,4 +1,4 @@
-//keystroke defining structs
+//keystroke defining struct
 struct keystroke {
     char key;
     int type;
@@ -9,13 +9,14 @@ struct keystroke {
 };
 
 
+//main struct for holding keystroke definitions
 struct keystrokes {
     int keystorkes;
     struct keystroke *keystrokeArray;
 };
 
 
-//structure for defining the window layouts
+//holder for contents of a split or tab
 struct container {
     int type; //the type of content
     union {
@@ -25,11 +26,13 @@ struct container {
 };
 
 
+//holder for stuff to be rendered to screen
 struct content {
     char **data; //array of strings to write to screen
 };
 
 
+//struct defining splits in your tui
 struct split {
     int splits; //amout of splits
     int type; //vertical or horizontal splits
@@ -38,6 +41,7 @@ struct split {
 };
 
 
+//struct defining tabs in your tui
 struct tab {
     char *name; //name of the tab
     int nameLen; //lenght of the tab's name
@@ -45,6 +49,7 @@ struct tab {
 };
 
 
+//main struct for holding all the content to be rendered and its layout
 struct TUI {
     int tabs; //the amount of tabs
     struct tab *tab; //array of tabs
@@ -56,7 +61,9 @@ struct TUI {
 };
 
 
-void initTUI (); //initiate cTUI
-void destroyTUI(); //destroy cTUI
-void updateTUI(struct keystrokes); //update keystroke handler
+void initTUI (); //initiate TUI
+void destroyTUI(); //destroy TUI
+void updateTUIKeystrokes(); //update keystroke handler
 void renderTUI(struct TUI); //render the TUI struct
+void setTab(int tab); //set witch tab to be rendered
+void setKeystrokes(struct keystrokes); //set keystrokes to be handled

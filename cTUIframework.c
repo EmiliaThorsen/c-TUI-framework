@@ -10,10 +10,12 @@ int screenRows;
 int screenCols;
 int tab = 0;
 char latestKeyStrokes[10];
+int keystrokeDisplayLength = 0;
+struct keystrokes baseKeyStrokes;
+struct keystrokes currentKeyStrokes;
 
 
 void initTUI() {
-    latestKeyStrokes[0] = 'x';
     nonblock(1);
 }
 
@@ -23,18 +25,38 @@ void destroyTUI() {
 }
 
 
-void updateTUI(struct keystrokes keyStrokes) {
+void setTab(int tab) {
+    tab = tab;
+}
+
+
+void setKeystrokes(struct keystrokes keyStrokes) {
+    baseKeyStrokes = keyStrokes;
+}
+
+
+void updateTUIKeystrokes() {
     struct inputKeys input = pollKeyStrokes();
     for(int key = 0; key < input.inputs; key++) {
-        for(int keyStroke = 0; keyStroke < keyStrokes.keystorkes; keyStroke++) {
-            if(input.inKeys[key] == keyStrokes.keystrokeArray[keyStroke].key) {
-                if(keyStrokes.keystrokeArray[keyStroke].type) {
-                    // implement recursive keystrokes!
+        char inKey = input.inKeys[key];
+        int failed = 1;
+        for(int keyStroke = 0; keyStroke < currentKeyStrokes.keystorkes; keyStroke++) {
+            if(inKey == currentKeyStrokes.keystrokeArray[keyStroke].key) {
+                if(currentKeyStrokes.keystrokeArray[keyStroke].type) {
+                    currentKeyStrokes = *currentKeyStrokes.keystrokeArray[keyStroke].recursiveKeystroke;
+                    keystrokeDisplayLength++;
+                    latestKeyStrokes[keystrokeDisplayLength] = inKey;
                 } else {
-                    latestKeyStrokes[0] = input.inKeys[key];
-                    keyStrokes.keystrokeArray[keyStroke].function();
+                    currentKeyStrokes.keystrokeArray[keyStroke].function();
+                    keystrokeDisplayLength = 0;
                 }
+                failed = 0;
+                break;
             }
+        }
+        if(failed) {
+            currentKeyStrokes = baseKeyStrokes;
+            keystrokeDisplayLength = 0;
         }
     }
 }
@@ -162,7 +184,12 @@ void renderTUI(struct TUI tuiStruct) {
 
     //keystroke indicator
     int keystrokeIndicatorLen = strlen(latestKeyStrokes);
-    writeLine(screen, screenCols-keystrokeIndicatorLen, screenRows-1, latestKeyStrokes);
+    if(keystrokeDisplayLength) {
+        for(int ch = keystrokeDisplayLength; ch != 0; ch--) {
+            setChar(screen, screenCols-ch, screenRows-1, latestKeyStrokes[ch]);
+        }
+    }
+
     //clear and render screen
     printf("\033[2J\033[H%s", screen);
 }

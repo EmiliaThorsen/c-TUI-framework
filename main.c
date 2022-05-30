@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 
+int running = 1;
 int testThing = 10;
 
 
@@ -11,6 +12,10 @@ void keytestidk() {
     testThing += 10;
 }
 
+
+void quit() {
+    running = 0;
+}
 
 int main() {
     initTUI();
@@ -52,16 +57,29 @@ int main() {
     tuiStruct.floatingWindow = &asd;
     
     struct keystrokes keystroke;
-    keystroke.keystorkes = 1;
-    struct keystroke teststroke[1];
+    keystroke.keystorkes = 2;
+    struct keystroke teststroke[2];
     teststroke[0].key = 't';
     teststroke[0].type = 0;
     teststroke[0].function = keytestidk;
-    keystroke.keystrokeArray = teststroke;
+    struct keystrokes recursiveTest;
+    recursiveTest.keystorkes = 1;
+    struct keystroke recursive[1];
+    recursive[0].key = 'a';
+    recursive[0].type = 0;
+    recursive[0].function = quit;
+    recursiveTest.keystrokeArray = recursive;
 
-    while (1) {
+
+    teststroke[1].key = 'q';
+    teststroke[1].type = 1;
+    teststroke[1].recursiveKeystroke = &recursiveTest;
+    keystroke.keystrokeArray = teststroke;
+    
+    setKeystrokes(keystroke);
+    while (running) {
         tuiStruct.tab[0].content->split->size[0] = testThing;
-        updateTUI(keystroke);
+        updateTUIKeystrokes();
         renderTUI(tuiStruct);
         usleep(50000);
     }
