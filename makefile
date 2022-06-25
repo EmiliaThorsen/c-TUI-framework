@@ -1,18 +1,41 @@
-CFLAGS = -Wall -g
-OBJ = main.o cTUIframework.o keyStrokes.o
+#project name
+target := cTUIFrameWork
 
-bld:
-	mkdir build
+#directories
+buildDir := ./build
+sourceDir := ./src
 
-%.o: %.c $.h
+#compiler stuff
+CC := gcc
+CFLAGS := -Wall -g
+libFlags :=
+
+#make file instructions ahead, generaly don't touch
+
+#file finding stuffs
+cFiles := $(wildcard $(sourceDir)/*/*.c) $(wildcard $(sourceDir)/*.c)
+OBJ := $(patsubst $(sourceDir)/%.c, $(buildDir)/%.o, $(cFiles))
+
+#make obj files in build from c files in src
+$(buildDir)/%.o: ./$(sourceDir)/%.c ./$(sourceDir)/%.h
+	mkdir -p $(@D)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-build: ${OBJ}
-	gcc -o cTuiTest ${OBJ} $(CFLAGS)
+#build the main program out of the obj files in build
+$(target): ${OBJ}
+	$(CC) -o $(target) $(OBJ) $(CFLAGS) $(libFlags)
 
-run: build
-	./cTuiTest
+#usefull stuffs
+.PHONY: all run clean test
+
+test:
+	echo $(OBJ)
+
+all: $(target)
+
+run: all
+	./$(target)
 
 clean:
-	rm -rf *.o
-	rm cTuiTest
+	rm -rf $(buildDir)
+	rm $(target)
