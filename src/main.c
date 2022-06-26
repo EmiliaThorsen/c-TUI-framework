@@ -89,6 +89,7 @@ int main() {
     while (running) {
         tuiStruct.tab[0].content->split->size[0] = testThing;
         updateTUIKeystrokes();
+        updateScreenSize();
         renderTUI(tuiStruct);
         usleep(50000);
     }

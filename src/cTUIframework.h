@@ -74,6 +74,7 @@ struct theme {
 void initTUI (); //initiate TUI
 void destroyTUI(); //destroy TUI
 void updateTUIKeystrokes(); //update keystroke handler
+void updateScreenSize();
 void renderTUI(struct TUI); //render the TUI struct
 void setTab(int tab); //set witch tab to be rendered
 void setKeystrokes(struct keystrokes); //set keystrokes to be handled

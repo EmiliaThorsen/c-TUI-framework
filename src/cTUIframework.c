@@ -174,7 +174,6 @@ void _splitRenderer(char *buffer, struct split split, int x, int y, int height, 
 
 void renderTUI(struct TUI tuiStruct) {
     //get screen size and initialize the screen string
-    updateScreenSize();
     int totalChars = screenRows*(screenCols+1)-1;
     char screen[totalChars];
     for(int ch = 0; ch < totalChars; ch++) {screen[ch] = ' ';}
