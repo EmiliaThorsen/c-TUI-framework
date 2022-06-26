@@ -20,6 +20,15 @@ void quit() {
 int main() {
     initTUI();
     //testing definitions
+
+    struct theme theme;
+    theme.splitBorders = 1;
+    theme.floatingWindowBorders = 1;
+    theme.topBarBorder = 1;
+    theme.sideEdgeBorder = 1;
+    theme.bottomBarBorder = 1;
+
+    setTheme(theme);
     struct TUI tuiStruct;
     struct tab tab1, tab2, tab3;
     tab1.name = "testTab1";
@@ -32,7 +41,7 @@ int main() {
     tabContent.type = 1;
     struct split split1;
     split1.splits = 2;
-    split1.type = 0;
+    split1.type = 1;
     int sizes[2] = {10, 10};
     split1.size = sizes;
     struct content testcontent;

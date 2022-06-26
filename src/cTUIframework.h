@@ -61,9 +61,20 @@ struct TUI {
 };
 
 
+//struct defining estetical changes
+struct theme {
+    int splitBorders;
+    int floatingWindowBorders;
+    int topBarBorder;
+    int sideEdgeBorder;
+    int bottomBarBorder;
+};
+
+
 void initTUI (); //initiate TUI
 void destroyTUI(); //destroy TUI
 void updateTUIKeystrokes(); //update keystroke handler
 void renderTUI(struct TUI); //render the TUI struct
 void setTab(int tab); //set witch tab to be rendered
 void setKeystrokes(struct keystrokes); //set keystrokes to be handled
+void setTheme(struct theme);

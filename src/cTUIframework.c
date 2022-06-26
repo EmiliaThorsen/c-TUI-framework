@@ -13,6 +13,8 @@ char latestKeyStrokes[10];
 int keystrokeDisplayLength = 0;
 struct keystrokes baseKeyStrokes;
 struct keystrokes currentKeyStrokes;
+struct theme theme;
+
 
 
 void initTUI() {
@@ -70,6 +72,10 @@ void updateScreenSize() {
 }
 
 
+void setTheme(struct theme newTheme) {
+    theme = newTheme;
+}
+
 //draw functions
 void setChar(char *buffer, int x, int y, char ch) {
     buffer[x+y*(screenCols+1)] = ch;
@@ -114,25 +120,42 @@ void _contentRenderer(char *buffer, struct content contents, int x, int y, int h
 }
 
 
-void _splitRenderer(char *buffer, struct split split, int x, int y, int height, int width) {
+void _splitRenderer(char *buffer, struct split split, int x, int y, int height, int width, int topBorder, int sideBorder) {
     int type = split.type;
     int xOfset = x;
     int yOfset = y;
     for(int region = 0; region < split.splits; region++) {
-        if (type) {
+        if(type) {
             if(split.split[region].type) {
-                _splitRenderer(buffer, *split.split[region].split, xOfset, yOfset, height, split.size[region]);
+                _splitRenderer(buffer, *split.split[region].split, xOfset, yOfset, height, split.size[region], topBorder, theme.splitBorders);
             } else {
                 _contentRenderer(buffer, *split.split[region].content, xOfset, yOfset, height, split.size[region]);
             }
             xOfset += split.size[region];
         } else {
             if(split.split[region].type) {
-                _splitRenderer(buffer, *split.split[region].split, xOfset, yOfset, split.size[region], height);
+                _splitRenderer(buffer, *split.split[region].split, xOfset, yOfset, split.size[region], height, theme.splitBorders, sideBorder);
             } else {
                 _contentRenderer(buffer, *split.split[region].content, xOfset, yOfset, split.size[region], height);
             }
             yOfset += split.size[region];
+        }
+        if(theme.splitBorders && region != split.splits - 1) {
+            if(type) {
+                writeVerticalLine(buffer, xOfset, yOfset, height, '|');
+                if(topBorder) {
+                    if(yOfset > 1) setChar(buffer, xOfset, yOfset - 1, '+');
+                    if(yOfset + height > screenRows-4) setChar(buffer, xOfset, yOfset + height, '+');
+                }
+                xOfset++;
+            } else {
+                writeHorizontalLine(buffer, xOfset, yOfset, width - 1, '-');
+                if(sideBorder) {
+                    if(xOfset > 0) setChar(buffer, xOfset - 1, yOfset, '+');
+                    if(xOfset + width < screenCols) setChar(buffer, xOfset + width - 1, yOfset, '+');
+                }
+                yOfset++;
+            }
         }
     }
 }
@@ -156,36 +179,77 @@ void renderTUI(struct TUI tuiStruct) {
         writeLine(screen, barPos, 0, tuiStruct.tab[barTab].name);
         barPos += tuiStruct.tab[barTab].nameLen+1;
     }
+    int tabBar = 1;
+    if(theme.topBarBorder) {
+        writeHorizontalLine(screen, 0, 1, screenCols, '-');
+        tabBar++;
+    }
+
+    //status bar
+    int rightLen = strlen(tuiStruct.barRight);
+    writeLine(screen, 0, screenRows - 2, tuiStruct.barLeft);
+    writeLine(screen, screenCols - rightLen, screenRows - 2, tuiStruct.barRight);
+    int tabSize = screenRows - 4;
+    if(theme.bottomBarBorder) {
+        writeHorizontalLine(screen, 0, screenRows - 3, screenCols, '-');
+        tabSize--;
+    }
 
     //tab rendering
+    int EdgeMargin = 0;
+    if(theme.sideEdgeBorder) {
+        writeVerticalLine(screen, 0, tabBar, tabSize, '|');
+        writeVerticalLine(screen, screenCols - 1, tabBar, tabSize, '|');
+        if(theme.topBarBorder) {
+            setChar(screen, 0, tabBar - 1, '+');
+            setChar(screen, screenCols - 1, tabBar - 1, '+');
+        }
+        if(theme.bottomBarBorder) {
+            setChar(screen, 0, screenRows- 3, '+');
+            setChar(screen, screenCols - 1, screenRows - 3, '+');
+        }
+        EdgeMargin++;
+    }
     struct tab currentTab = tuiStruct.tab[tab];
     if(currentTab.content->type) {
-        _splitRenderer(screen, *currentTab.content->split, 0, 1, screenRows-4, screenCols);
+        _splitRenderer(screen, *currentTab.content->split, EdgeMargin, tabBar, tabSize, screenCols-EdgeMargin, theme.bottomBarBorder + theme.topBarBorder, theme.sideEdgeBorder);
     } else {
-        _contentRenderer(screen, *currentTab.content->content, 0, 1, screenRows-4, screenCols);
+        _contentRenderer(screen, *currentTab.content->content, EdgeMargin, tabBar, tabSize, screenCols-EdgeMargin);
     }
 
     //floating window rendering
-    if(tuiStruct.floatingHeight != 0 && tuiStruct.floatingWidth != 0) {
+    if(tuiStruct.floatingHeight && tuiStruct.floatingWidth) {
+        int floatingHeight = tuiStruct.floatingHeight;
+        int floatingWidth = tuiStruct.floatingWidth;
         int floatingX = screenCols/2 - tuiStruct.floatingWidth/2;
         int floatingY = screenRows/2 - tuiStruct.floatingHeight/2;
+        if(theme.floatingWindowBorders) {
+            writeHorizontalLine(screen, floatingX, floatingY, floatingWidth, '-');
+            writeHorizontalLine(screen, floatingX, floatingY + floatingHeight, floatingWidth, '-');
+            writeVerticalLine(screen, floatingX, floatingY, floatingHeight, '|');
+            writeVerticalLine(screen, floatingX + floatingWidth, floatingY, floatingHeight, '|');
+            setChar(screen, floatingX, floatingY, '+');
+            setChar(screen, floatingX, floatingY + floatingHeight, '+');
+            setChar(screen, floatingX + floatingWidth, floatingY, '+');
+            setChar(screen, floatingX + floatingWidth, floatingY + floatingHeight, '+');
+            floatingX++;
+            floatingY++;
+            floatingHeight -= 2;
+            floatingWidth -= 2;
+        }
+
         struct container floatingWindow = *tuiStruct.floatingWindow;
         if(floatingWindow.type) {
-            _splitRenderer(screen, *floatingWindow.split, floatingX, floatingY, tuiStruct.floatingWidth, tuiStruct.floatingHeight);
+            _splitRenderer(screen, *floatingWindow.split, floatingX, floatingY, tuiStruct.floatingWidth, tuiStruct.floatingHeight, theme.floatingWindowBorders, theme.floatingWindowBorders);
         } else {
             _contentRenderer(screen, *floatingWindow.content, floatingX, floatingY, tuiStruct.floatingWidth, tuiStruct.floatingHeight);
         }
     }
 
-    //status bar
-    int rightLen = strlen(tuiStruct.barRight);
-    writeLine(screen, 0, screenRows-2, tuiStruct.barLeft);
-    writeLine(screen, screenCols-rightLen, screenRows-2, tuiStruct.barRight);
-
     //keystroke indicator
     int keystrokeIndicatorLen = strlen(latestKeyStrokes);
     if(keystrokeDisplayLength) {
-        for(int ch = keystrokeDisplayLength; ch != 0; ch--) {
+        for(int ch = keystrokeDisplayLength; ch; ch--) {
             setChar(screen, screenCols-ch, screenRows-1, latestKeyStrokes[ch]);
         }
     }
