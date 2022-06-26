@@ -76,6 +76,17 @@ void setTheme(struct theme newTheme) {
     theme = newTheme;
 }
 
+
+int getScreenWidth() {
+    return screenCols;
+}
+
+
+int getScreenHeight() {
+    return screenRows;
+}
+
+
 //draw functions
 void setChar(char *buffer, int x, int y, char ch) {
     buffer[x+y*(screenCols+1)] = ch;

@@ -78,3 +78,5 @@ void renderTUI(struct TUI); //render the TUI struct
 void setTab(int tab); //set witch tab to be rendered
 void setKeystrokes(struct keystrokes); //set keystrokes to be handled
 void setTheme(struct theme);
+int getScreenWidth();
+int getScreenHeight();
