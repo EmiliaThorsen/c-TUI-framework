@@ -1,9 +1,10 @@
-#include "keyStrokes.h"
 #include "cTUIframework.h"
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/select.h>
+#include <termios.h>
 
 
 int screenRows;
@@ -16,24 +17,56 @@ struct keystrokes currentKeyStrokes;
 struct theme theme;
 
 
-
 void initTUI() {
-    nonblock(1);
+    //sets the terminal to non blocking mode
+    struct termios ttystate;
+    tcgetattr(STDIN_FILENO, &ttystate);
+    ttystate.c_lflag &= ~ICANON;
+    ttystate.c_cc[VMIN] = 0;
+    tcsetattr(STDIN_FILENO, TCSANOW, &ttystate);
 }
 
 
 void destroyTUI() {
-    nonblock(0);
-}
+    //unsets non blocking mode
+    struct termios ttystate;
+    tcgetattr(STDIN_FILENO, &ttystate);
+    ttystate.c_lflag |= ICANON;
+    tcsetattr(STDIN_FILENO, TCSANOW, &ttystate);}
 
 
-void setTab(int tab) {
-    tab = tab;
+void setTab(int newTab) {
+    tab = newTab;
 }
 
 
 void setKeystrokes(struct keystrokes keyStrokes) {
     baseKeyStrokes = keyStrokes;
+}
+
+
+//checks if there are chars left in the buffer from user inputs
+int kbhit() {
+    struct timeval tv;
+    fd_set fds;
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
+    FD_ZERO(&fds);
+    FD_SET(STDIN_FILENO, &fds);
+    select(STDIN_FILENO+1, &fds, NULL, NULL, &tv);
+    return FD_ISSET(STDIN_FILENO, &fds);
+}
+
+
+int pollKeyStrokes(char *array) {
+    int ch = 0;
+    while(1) {
+        if (kbhit() != 0 && ch < 10) {
+            array[ch] = fgetc(stdin);
+            ch++;
+        } else {break;}
+    }
+    return ch;
 }
 
 
@@ -89,45 +122,49 @@ int getScreenHeight() {
 
 
 //draw functions
-void setChar(char *buffer, int x, int y, char ch) {
-    buffer[x+y*(screenCols+1)] = ch;
+
+
+void _setChar(char *buffer, int x, int y, char ch) {
+    buffer[x + y * (screenCols + 1)] = ch;
 }
 
 
-void writeLine(char *buffer, int x, int y, char *str) {
+void _writeLine(char *buffer, int x, int y, char *str) {
     int strLength = strlen(str);
-    for (int ch = 0; ch < strLength; ch++) {
-        buffer[x+ch+y*(screenCols+1)] = str[ch];
+    for(int ch = 0; ch < strLength; ch++) {
+        buffer[x + ch + y * (screenCols + 1)] = str[ch];
     }
 }
 
 
-void writeTextBlock(char *buffer, int x, int y, int lines, int cols, char *str[]) {
+void _writeTextBlock(char *buffer, int x, int y, int lines, int cols, char *str[]) {
     for(int line = 0; line < lines; line++) {
-        for (int ch = 0; ch < cols; ch++) {
-            buffer[x+ch+(y+line)*(screenCols+1)] = str[line][ch];
+        for(int ch = 0; ch < cols; ch++) {
+            buffer[x + ch + (y + line) * (screenCols + 1)] = str[line][ch];
         }
     }
 }
 
 
-void writeHorizontalLine(char *buffer, int x, int y, int length, char ch) {
-    for (int col = 0; col < length; col++) {
-        buffer[x+col+y*(screenCols+1)] = ch;
+void _writeHorizontalLine(char *buffer, int x, int y, int length, char ch) {
+    for(int col = 0; col < length; col++) {
+        buffer[x + col + y * (screenCols + 1)] = ch;
     }
 }
 
 
-void writeVerticalLine(char *buffer, int x, int y, int length, char ch) {
-    for (int row = 0; row < length; row++) {
-        buffer[x+(y+row)*(screenCols+1)] = ch;
+void _writeVerticalLine(char *buffer, int x, int y, int length, char ch) {
+    for(int row = 0; row < length; row++) {
+        buffer[x + (y + row) * (screenCols + 1)] = ch;
     }
 }
 
 
 //rendering functions
+
+
 void _contentRenderer(char *buffer, struct content contents, int x, int y, int height, int width) {
-    setChar(buffer, x, y, '>');
+    _setChar(buffer, x, y, '>');
     //writeTextBlock(buffer, x, y, height, width, contents.data);
 }
 
@@ -154,17 +191,17 @@ void _splitRenderer(char *buffer, struct split split, int x, int y, int height, 
         }
         if(theme.splitBorders && region != split.splits - 1) {
             if(type) {
-                writeVerticalLine(buffer, xOfset, yOfset, height, '|');
+                _writeVerticalLine(buffer, xOfset, yOfset, height, '|');
                 if(topBorder) {
-                    if(yOfset > 1) setChar(buffer, xOfset, yOfset - 1, '+');
-                    if(yOfset + height > screenRows-4) setChar(buffer, xOfset, yOfset + height, '+');
+                    if(yOfset > 1) _setChar(buffer, xOfset, yOfset - 1, '+');
+                    if(yOfset + height > screenRows - 4) _setChar(buffer, xOfset, yOfset + height, '+');
                 }
                 xOfset++;
             } else {
-                writeHorizontalLine(buffer, xOfset, yOfset, width - 1, '-');
+                _writeHorizontalLine(buffer, xOfset, yOfset, width - 1, '-');
                 if(sideBorder) {
-                    if(xOfset > 0) setChar(buffer, xOfset - 1, yOfset, '+');
-                    if(xOfset + width < screenCols) setChar(buffer, xOfset + width - 1, yOfset, '+');
+                    if(xOfset > 0) _setChar(buffer, xOfset - 1, yOfset, '+');
+                    if(xOfset + width < screenCols) _setChar(buffer, xOfset + width - 1, yOfset, '+');
                 }
                 yOfset++;
             }
@@ -175,74 +212,74 @@ void _splitRenderer(char *buffer, struct split split, int x, int y, int height, 
 
 void renderTUI(struct TUI tuiStruct) {
     //get screen size and initialize the screen string
-    int totalChars = screenRows*(screenCols+1)-1;
+    int totalChars = screenRows * (screenCols + 1) - 1;
     char screen[totalChars];
     for(int ch = 0; ch < totalChars; ch++) {screen[ch] = ' ';}
-    for(int row = 1; row < screenRows+1; row++) {screen[(screenCols+1)*row-1] = '\n';}
+    for(int row = 1; row < screenRows + 1; row++) {screen[(screenCols + 1) * row - 1] = '\n';}
 
     //tab bar rendering
     int barPos = 0;
     for(int barTab = 0; barTab < tuiStruct.tabs; ++barTab) {
         if(barTab == tab) {
-            setChar(screen, barPos, 0, '>');
+            _setChar(screen, barPos, 0, '>');
             barPos += 1;
         }
-        writeLine(screen, barPos, 0, tuiStruct.tab[barTab].name);
+        _writeLine(screen, barPos, 0, tuiStruct.tab[barTab].name);
         barPos += strlen(tuiStruct.tab[barTab].name) + 1;
     }
     int tabBar = 1;
     if(theme.topBarBorder) {
-        writeHorizontalLine(screen, 0, 1, screenCols, '-');
+        _writeHorizontalLine(screen, 0, 1, screenCols, '-');
         tabBar++;
     }
 
     //status bar
     int rightLen = strlen(tuiStruct.barRight);
-    writeLine(screen, 0, screenRows - 2, tuiStruct.barLeft);
-    writeLine(screen, screenCols - rightLen, screenRows - 2, tuiStruct.barRight);
+    _writeLine(screen, 0, screenRows - 2, tuiStruct.barLeft);
+    _writeLine(screen, screenCols - rightLen, screenRows - 2, tuiStruct.barRight);
     int tabSize = screenRows - 4;
     if(theme.bottomBarBorder) {
-        writeHorizontalLine(screen, 0, screenRows - 3, screenCols, '-');
+        _writeHorizontalLine(screen, 0, screenRows - 3, screenCols, '-');
         tabSize--;
     }
 
     //tab rendering
     int EdgeMargin = 0;
     if(theme.sideEdgeBorder) {
-        writeVerticalLine(screen, 0, tabBar, tabSize, '|');
-        writeVerticalLine(screen, screenCols - 1, tabBar, tabSize, '|');
+        _writeVerticalLine(screen, 0, tabBar, tabSize, '|');
+        _writeVerticalLine(screen, screenCols - 1, tabBar, tabSize, '|');
         if(theme.topBarBorder) {
-            setChar(screen, 0, tabBar - 1, '+');
-            setChar(screen, screenCols - 1, tabBar - 1, '+');
+            _setChar(screen, 0, tabBar - 1, '+');
+            _setChar(screen, screenCols - 1, tabBar - 1, '+');
         }
         if(theme.bottomBarBorder) {
-            setChar(screen, 0, screenRows- 3, '+');
-            setChar(screen, screenCols - 1, screenRows - 3, '+');
+            _setChar(screen, 0, screenRows - 3, '+');
+            _setChar(screen, screenCols - 1, screenRows - 3, '+');
         }
         EdgeMargin++;
     }
     struct tab currentTab = tuiStruct.tab[tab];
     if(currentTab.content->type) {
-        _splitRenderer(screen, *currentTab.content->split, EdgeMargin, tabBar, tabSize, screenCols-EdgeMargin, theme.bottomBarBorder + theme.topBarBorder, theme.sideEdgeBorder);
+        _splitRenderer(screen, *currentTab.content->split, EdgeMargin, tabBar, tabSize, screenCols - EdgeMargin, theme.bottomBarBorder + theme.topBarBorder, theme.sideEdgeBorder);
     } else {
-        _contentRenderer(screen, *currentTab.content->content, EdgeMargin, tabBar, tabSize, screenCols-EdgeMargin);
+        _contentRenderer(screen, *currentTab.content->content, EdgeMargin, tabBar, tabSize, screenCols - EdgeMargin);
     }
 
     //floating window rendering
     if(tuiStruct.floatingWindow->height && tuiStruct.floatingWindow->width) {
         int floatingHeight = tuiStruct.floatingWindow->height;
         int floatingWidth = tuiStruct.floatingWindow->width;
-        int floatingX = screenCols/2 - floatingWidth/2;
-        int floatingY = screenRows/2 - floatingHeight/2;
+        int floatingX = screenCols / 2 - floatingWidth / 2;
+        int floatingY = screenRows / 2 - floatingHeight / 2;
         if(theme.floatingWindowBorders) {
-            writeHorizontalLine(screen, floatingX, floatingY, floatingWidth, '-');
-            writeHorizontalLine(screen, floatingX, floatingY + floatingHeight, floatingWidth, '-');
-            writeVerticalLine(screen, floatingX, floatingY, floatingHeight, '|');
-            writeVerticalLine(screen, floatingX + floatingWidth, floatingY, floatingHeight, '|');
-            setChar(screen, floatingX, floatingY, '+');
-            setChar(screen, floatingX, floatingY + floatingHeight, '+');
-            setChar(screen, floatingX + floatingWidth, floatingY, '+');
-            setChar(screen, floatingX + floatingWidth, floatingY + floatingHeight, '+');
+            _writeHorizontalLine(screen, floatingX, floatingY, floatingWidth, '-');
+            _writeHorizontalLine(screen, floatingX, floatingY + floatingHeight, floatingWidth, '-');
+            _writeVerticalLine(screen, floatingX, floatingY, floatingHeight, '|');
+            _writeVerticalLine(screen, floatingX + floatingWidth, floatingY, floatingHeight, '|');
+            _setChar(screen, floatingX, floatingY, '+');
+            _setChar(screen, floatingX, floatingY + floatingHeight, '+');
+            _setChar(screen, floatingX + floatingWidth, floatingY, '+');
+            _setChar(screen, floatingX + floatingWidth, floatingY + floatingHeight, '+');
             floatingX++;
             floatingY++;
             floatingHeight -= 2;
@@ -261,10 +298,10 @@ void renderTUI(struct TUI tuiStruct) {
     int keystrokeIndicatorLen = strlen(latestKeyStrokes);
     if(keystrokeDisplayLength) {
         for(int ch = keystrokeDisplayLength; ch; ch--) {
-            setChar(screen, screenCols-ch, screenRows-1, latestKeyStrokes[ch]);
+            _setChar(screen, screenCols - ch, screenRows - 1, latestKeyStrokes[ch]);
         }
     }
 
-    //clear and render screen
+    //clear and print screen
     printf("\033[2J\033[H%s", screen);
 }

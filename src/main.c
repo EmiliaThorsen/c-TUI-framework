@@ -43,13 +43,13 @@ int main() {
     int sizes[2] = {10, 10};
     split1.size = sizes;
     struct content testcontent;
-    struct container asd;
-    asd.type = content;
-    asd.content = &testcontent;
-    struct container asdarr[2];
-    asdarr[0] = asd;
-    asdarr[1] = asd;
-    split1.split = asdarr;
+    struct container testingContainer;
+    testingContainer.type = content;
+    testingContainer.content = &testcontent;
+    struct container testingContainerArray[2];
+    testingContainerArray[0] = testingContainer;
+    testingContainerArray[1] = testingContainer;
+    split1.split = testingContainerArray;
     tabContent.split = &split1;
     tab1.content = &tabContent;
     struct tab tabs[3] = {tab1, tab2, tab3};
@@ -60,7 +60,7 @@ int main() {
     struct floatingWindow floatingWindow;
     floatingWindow.height = 10;
     floatingWindow.width = 20;
-    floatingWindow.window = asd;
+    floatingWindow.window = testingContainer;
     tuiStruct.floatingWindow = &floatingWindow;
 
     struct keystrokes keystroke;
