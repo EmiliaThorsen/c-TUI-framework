@@ -1,4 +1,4 @@
-#include "cTUIframework.h"
+#include "cTUIFramework.h"
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
@@ -295,7 +295,6 @@ void renderTUI(struct TUI tuiStruct) {
     }
 
     //keystroke indicator
-    int keystrokeIndicatorLen = strlen(latestKeyStrokes);
     if(keystrokeDisplayLength) {
         for(int ch = keystrokeDisplayLength; ch; ch--) {
             _setChar(screen, screenCols - ch, screenRows - 1, latestKeyStrokes[ch]);

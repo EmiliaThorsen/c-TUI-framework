@@ -1,41 +1,13 @@
-#project name
-target := cTUIFrameWork
+cc = gcc
+cflags = -Wall -g
 
-#directories
-buildDir := ./build
-sourceDir := ./src
+.PHONY: all run clean
 
-#compiler stuff
-CC := gcc
-CFLAGS := -Wall -g
-libFlags :=
-
-#make file instructions ahead, generaly don't touch
-
-#file finding stuffs
-cFiles := $(wildcard $(sourceDir)/*/*.c) $(wildcard $(sourceDir)/*.c)
-OBJ := $(patsubst $(sourceDir)/%.c, $(buildDir)/%.o, $(cFiles))
-
-#make obj files in build from c files in src
-$(buildDir)/%.o: ./$(sourceDir)/%.c ./$(sourceDir)/%.h
-	mkdir -p $(@D)
-	$(CC) -c -o $@ $< $(CFLAGS)
-
-#build the main program out of the obj files in build
-$(target): ${OBJ}
-	$(CC) -o $(target) $(OBJ) $(CFLAGS) $(libFlags)
-
-#usefull stuffs
-.PHONY: all run clean test
-
-test:
-	echo $(OBJ)
-
-all: $(target)
+all: main.c cTUIFramework.c cTUIFramework.h
+	$(cc) -o cTUIFramework main.c cTUIFramework.c $(cflags)
 
 run: all
-	./$(target)
+	./cTUIFramework
 
 clean:
-	rm -rf $(buildDir)
-	rm $(target)
+	rm ./cTUIFramework

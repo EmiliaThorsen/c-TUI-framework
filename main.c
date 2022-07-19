@@ -1,4 +1,4 @@
-#include "cTUIframework.h"
+#include "cTUIFramework.h"
 #include <termios.h>
 #include <stdio.h>
 #include <unistd.h>
