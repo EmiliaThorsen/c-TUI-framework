@@ -17,6 +17,7 @@ void quit() {
     running = 0;
 }
 
+
 int main() {
     initTUI();
     //testing definitions
@@ -32,21 +33,18 @@ int main() {
     struct TUI tuiStruct;
     struct tab tab1, tab2, tab3;
     tab1.name = "testTab1";
-    tab1.nameLen = 8;
     tab2.name = "testTab2";
-    tab2.nameLen = 8;
     tab3.name = "testTab3";
-    tab3.nameLen = 8;
     struct container tabContent;
-    tabContent.type = 1;
+    tabContent.type = split;
     struct split split1;
     split1.splits = 2;
-    split1.type = 1;
+    split1.type = split;
     int sizes[2] = {10, 10};
     split1.size = sizes;
     struct content testcontent;
     struct container asd;
-    asd.type = 0;
+    asd.type = content;
     asd.content = &testcontent;
     struct container asdarr[2];
     asdarr[0] = asd;
@@ -57,34 +55,34 @@ int main() {
     struct tab tabs[3] = {tab1, tab2, tab3};
     tuiStruct.tabs = 3;
     tuiStruct.tab = tabs;
-    tuiStruct.floatingWidth = 0;
-    tuiStruct.floatingHeight = 0;
     tuiStruct.barLeft = "left owo";
     tuiStruct.barRight = "right UwU";
-    tuiStruct.floatingHeight = 10;
-    tuiStruct.floatingWidth = 20;
-    tuiStruct.floatingWindow = &asd;
-    
+    struct floatingWindow floatingWindow;
+    floatingWindow.height = 10;
+    floatingWindow.width = 20;
+    floatingWindow.window = asd;
+    tuiStruct.floatingWindow = &floatingWindow;
+
     struct keystrokes keystroke;
     keystroke.keystorkes = 2;
     struct keystroke teststroke[2];
     teststroke[0].key = 't';
-    teststroke[0].type = 0;
+    teststroke[0].type = final;
     teststroke[0].function = keytestidk;
     struct keystrokes recursiveTest;
     recursiveTest.keystorkes = 1;
-    struct keystroke recursive[1];
-    recursive[0].key = 'a';
-    recursive[0].type = 0;
-    recursive[0].function = quit;
-    recursiveTest.keystrokeArray = recursive;
+    struct keystroke recursiveArray[1];
+    recursiveArray[0].key = 'a';
+    recursiveArray[0].type = final;
+    recursiveArray[0].function = quit;
+    recursiveTest.keystrokeArray = recursiveArray;
 
 
     teststroke[1].key = 'q';
-    teststroke[1].type = 1;
+    teststroke[1].type = recursive;
     teststroke[1].recursiveKeystroke = &recursiveTest;
     keystroke.keystrokeArray = teststroke;
-    
+
     setKeystrokes(keystroke);
     while (running) {
         tuiStruct.tab[0].content->split->size[0] = testThing;

@@ -187,7 +187,7 @@ void renderTUI(struct TUI tuiStruct) {
             barPos += 1;
         }
         writeLine(screen, barPos, 0, tuiStruct.tab[barTab].name);
-        barPos += tuiStruct.tab[barTab].nameLen+1;
+        barPos += strlen(tuiStruct.tab[barTab].name) + 1;
     }
     int tabBar = 1;
     if(theme.topBarBorder) {
@@ -228,11 +228,11 @@ void renderTUI(struct TUI tuiStruct) {
     }
 
     //floating window rendering
-    if(tuiStruct.floatingHeight && tuiStruct.floatingWidth) {
-        int floatingHeight = tuiStruct.floatingHeight;
-        int floatingWidth = tuiStruct.floatingWidth;
-        int floatingX = screenCols/2 - tuiStruct.floatingWidth/2;
-        int floatingY = screenRows/2 - tuiStruct.floatingHeight/2;
+    if(tuiStruct.floatingWindow->height && tuiStruct.floatingWindow->width) {
+        int floatingHeight = tuiStruct.floatingWindow->height;
+        int floatingWidth = tuiStruct.floatingWindow->width;
+        int floatingX = screenCols/2 - floatingWidth/2;
+        int floatingY = screenRows/2 - floatingHeight/2;
         if(theme.floatingWindowBorders) {
             writeHorizontalLine(screen, floatingX, floatingY, floatingWidth, '-');
             writeHorizontalLine(screen, floatingX, floatingY + floatingHeight, floatingWidth, '-');
@@ -248,11 +248,11 @@ void renderTUI(struct TUI tuiStruct) {
             floatingWidth -= 2;
         }
 
-        struct container floatingWindow = *tuiStruct.floatingWindow;
+        struct container floatingWindow = tuiStruct.floatingWindow->window;
         if(floatingWindow.type) {
-            _splitRenderer(screen, *floatingWindow.split, floatingX, floatingY, tuiStruct.floatingWidth, tuiStruct.floatingHeight, theme.floatingWindowBorders, theme.floatingWindowBorders);
+            _splitRenderer(screen, *floatingWindow.split, floatingX, floatingY, floatingWidth, floatingHeight, theme.floatingWindowBorders, theme.floatingWindowBorders);
         } else {
-            _contentRenderer(screen, *floatingWindow.content, floatingX, floatingY, tuiStruct.floatingWidth, tuiStruct.floatingHeight);
+            _contentRenderer(screen, *floatingWindow.content, floatingX, floatingY, floatingWidth, floatingHeight);
         }
     }
 

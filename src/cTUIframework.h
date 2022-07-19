@@ -1,3 +1,9 @@
+enum {
+    final,
+    recursive
+};
+
+
 //keystroke defining struct
 struct keystroke {
     char key;
@@ -13,6 +19,12 @@ struct keystroke {
 struct keystrokes {
     int keystorkes;
     struct keystroke *keystrokeArray;
+};
+
+
+enum {
+    content,
+    split
 };
 
 
@@ -44,8 +56,15 @@ struct split {
 //struct defining tabs in your tui
 struct tab {
     char *name; //name of the tab
-    int nameLen; //lenght of the tab's name
     struct container *content; //content of the tab, either content or a split
+};
+
+
+//struct defining the floating window
+struct floatingWindow {
+    int height; //if height or width is 0 will the floating window be disabled
+    int width;
+    struct container window;
 };
 
 
@@ -53,9 +72,7 @@ struct tab {
 struct TUI {
     int tabs; //the amount of tabs
     struct tab *tab; //array of tabs
-    int floatingWidth; //the width of the floating window (disabled if 0)
-    int floatingHeight; //the height of the floating window (disabled if 0)
-    struct container *floatingWindow; //container for the floating window
+    struct floatingWindow *floatingWindow; //struct defining the centered floating window
     char *barRight; //text on the right side of the status bar
     char *barLeft; //text on the left side of the status bar
 };
