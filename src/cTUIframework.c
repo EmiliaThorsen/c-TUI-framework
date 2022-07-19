@@ -38,9 +38,10 @@ void setKeystrokes(struct keystrokes keyStrokes) {
 
 
 void updateTUIKeystrokes() {
-    struct inputKeys input = pollKeyStrokes();
-    for(int key = 0; key < input.inputs; key++) {
-        char inKey = input.inKeys[key];
+    char inKeys[10];
+    int inputs = pollKeyStrokes(inKeys);
+    for(int key = 0; key < inputs; key++) {
+        char inKey = inKeys[key];
         int failed = 1;
         for(int keyStroke = 0; keyStroke < currentKeyStrokes.keystorkes; keyStroke++) {
             if(inKey == currentKeyStrokes.keystrokeArray[keyStroke].key) {

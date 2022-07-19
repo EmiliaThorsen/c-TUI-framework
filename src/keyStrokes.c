@@ -30,17 +30,13 @@ int kbhit() {
 }
 
 
-struct inputKeys pollKeyStrokes() {
-    char inChar[10];
+int pollKeyStrokes(char *array) {
     int ch = 0;
     while(1) {
         if (kbhit() != 0 && ch < 10) {
-            inChar[ch] = fgetc(stdin);
+            array[ch] = fgetc(stdin);
             ch++;
         } else {break;}
     }
-    struct inputKeys output;
-    output.inputs = ch;
-    output.inKeys = inChar;
-    return output;
+    return ch;
 }
