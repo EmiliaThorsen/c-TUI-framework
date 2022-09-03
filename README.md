@@ -9,8 +9,9 @@ This project is currently at where I want it for now, and will only update it if
 ## usage
 Should be easy egnouth to understand the structure from my comments in the .h file
 
-Define the theme you want and the keystrokes you want with pointers to functions in your project.
+Define the theme you want with the theme struct
+define the keystrokes you want with the keystrokes struct containing keystroke strucs with pointers to functions in your project or nested keystrokes.
 
-then in your main loop, poll keystrokes with the updateTUIKeystrokes function, update screen size with that function, use the getters to define a layout in the TUIStruct and render it all with renderTUI.
+then in your main loop, poll keystrokes with the updateTUIKeystrokes function, update screen size with the updateScreenSize function, use the size getters to define a layout in the TUIStruct with tabs and content/splits and render it all with renderTUI that calls your defined window rendering functions.
 
-(pssst the main.c file is testing code, but you can look in there for "examples" of how to do stuff, tho I will warn its crude...)
+(pssst the main.c file is testing code, but you can look in there for "examples" of how to do stuff, tho I will warn it's not the best example code...)
