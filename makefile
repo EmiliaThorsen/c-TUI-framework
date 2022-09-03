@@ -1,4 +1,4 @@
-cc = gcc
+cc = clang
 cflags = -Wall -g
 
 .PHONY: all run clean

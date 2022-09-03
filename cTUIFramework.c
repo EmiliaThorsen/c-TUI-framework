@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/select.h>
 #include <termios.h>
+#include "stdlib.h"
 
 
 int screenRows;
@@ -137,10 +138,10 @@ void _writeLine(char *buffer, int x, int y, char *str) {
 }
 
 
-void _writeTextBlock(char *buffer, int x, int y, int lines, int cols, char *str[]) {
+void _writeTextBlock(char *buffer, int x, int y, int lines, int cols, char **str) {
     for(int line = 0; line < lines; line++) {
-        for(int ch = 0; ch < cols; ch++) {
-            buffer[x + ch + (y + line) * (screenCols + 1)] = str[line][ch];
+        for(int col = 0; col < cols; col++) {
+            buffer[x + col + (y + line) * (screenCols + 1)] = str[line][col];
         }
     }
 }
@@ -163,9 +164,21 @@ void _writeVerticalLine(char *buffer, int x, int y, int length, char ch) {
 //rendering functions
 
 
-void _contentRenderer(char *buffer, struct content contents, int x, int y, int height, int width) {
-    _setChar(buffer, x, y, '>');
-    //writeTextBlock(buffer, x, y, height, width, contents.data);
+void _contentRenderer(char *buffer, char **(*func)(int, int), int x, int y, int width, int height) {
+    _writeTextBlock(buffer, x, y, width, height, func(width, height));
+}
+
+
+char **initWindowContent(int width, int height, char background) {
+    char **content = (char **)malloc(sizeof(char *) * width + sizeof(char) * width * height);
+    char *ptr = (char *)(content + width);
+    for(int i = 0; i < width + 1; i++) content[i] = (ptr + height * i);
+    for (int line = 0; line < width; line++) {
+        for (int col = 0; col < height; col++) {
+            content[line][col] = background;
+        }
+    }
+    return content;
 }
 
 
@@ -272,18 +285,18 @@ void renderTUI(struct TUI tuiStruct) {
         int floatingX = screenCols / 2 - floatingWidth / 2;
         int floatingY = screenRows / 2 - floatingHeight / 2;
         if(theme.floatingWindowBorders) {
-            _writeHorizontalLine(screen, floatingX, floatingY, floatingWidth, '-');
-            _writeHorizontalLine(screen, floatingX, floatingY + floatingHeight, floatingWidth, '-');
-            _writeVerticalLine(screen, floatingX, floatingY, floatingHeight, '|');
-            _writeVerticalLine(screen, floatingX + floatingWidth, floatingY, floatingHeight, '|');
+            _writeHorizontalLine(screen, floatingX, floatingY, floatingHeight, '-');
+            _writeHorizontalLine(screen, floatingX, floatingY + floatingWidth, floatingHeight, '-');
+            _writeVerticalLine(screen, floatingX, floatingY, floatingWidth, '|');
+            _writeVerticalLine(screen, floatingX + floatingHeight, floatingY, floatingWidth, '|');
             _setChar(screen, floatingX, floatingY, '+');
-            _setChar(screen, floatingX, floatingY + floatingHeight, '+');
-            _setChar(screen, floatingX + floatingWidth, floatingY, '+');
-            _setChar(screen, floatingX + floatingWidth, floatingY + floatingHeight, '+');
+            _setChar(screen, floatingX, floatingY + floatingWidth, '+');
+            _setChar(screen, floatingX + floatingHeight, floatingY, '+');
+            _setChar(screen, floatingX + floatingHeight, floatingY + floatingWidth, '+');
             floatingX++;
             floatingY++;
-            floatingHeight -= 2;
-            floatingWidth -= 2;
+            floatingHeight -= 1;
+            floatingWidth -= 1;
         }
 
         struct container floatingWindow = tuiStruct.floatingWindow->window;

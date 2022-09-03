@@ -33,14 +33,8 @@ struct container {
     int type; //the type of content
     union {
         struct split *split;
-        struct content *content;
+        char **(*content)(int, int);
     };
-};
-
-
-//holder for stuff to be rendered to screen
-struct content {
-    char **data; //array of strings to write to screen
 };
 
 
@@ -92,6 +86,7 @@ void initTUI (); //initiate TUI
 void destroyTUI(); //destroy TUI
 void updateTUIKeystrokes(); //update keystroke handler
 void updateScreenSize();
+char **initWindowContent(int, int, char); //mallocs a 2d array of chars for window content
 void renderTUI(struct TUI); //render the TUI struct
 void setTab(int tab); //set witch tab to be rendered
 void setKeystrokes(struct keystrokes); //set keystrokes to be handled

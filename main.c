@@ -2,7 +2,7 @@
 #include <termios.h>
 #include <stdio.h>
 #include <unistd.h>
-
+#include "stdlib.h"
 
 int running = 1;
 int testThing = 10;
@@ -15,6 +15,12 @@ void keytestidk() {
 
 void quit() {
     running = 0;
+}
+
+char **simpleTestContent(int width, int height) {
+    char **content = initWindowContent(width, height, ' ');
+    content[0][0] = '>';
+    return content;
 }
 
 
@@ -40,12 +46,11 @@ int main() {
     struct split split1;
     split1.splits = 2;
     split1.type = split;
-    int sizes[2] = {10, 10};
+    int sizes[2] = {10, 50};
     split1.size = sizes;
-    struct content testcontent;
     struct container testingContainer;
     testingContainer.type = content;
-    testingContainer.content = &testcontent;
+    testingContainer.content = simpleTestContent;
     struct container testingContainerArray[2];
     testingContainerArray[0] = testingContainer;
     testingContainerArray[1] = testingContainer;
@@ -58,8 +63,8 @@ int main() {
     tuiStruct.barLeft = "left owo";
     tuiStruct.barRight = "right UwU";
     struct floatingWindow floatingWindow;
-    floatingWindow.height = 10;
-    floatingWindow.width = 20;
+    floatingWindow.height = 20;
+    floatingWindow.width = 30;
     floatingWindow.window = testingContainer;
     tuiStruct.floatingWindow = &floatingWindow;
 
