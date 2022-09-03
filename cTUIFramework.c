@@ -165,7 +165,9 @@ void _writeVerticalLine(char *buffer, int x, int y, int length, char ch) {
 
 
 void _contentRenderer(char *buffer, char **(*func)(int, int), int x, int y, int width, int height) {
-    _writeTextBlock(buffer, x, y, width, height, func(width, height));
+    char **content = func(width, height);
+    _writeTextBlock(buffer, x, y, width, height, content);
+    free(content);
 }
 
 
