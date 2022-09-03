@@ -31,9 +31,10 @@ enum {
 //holder for contents of a split or tab
 struct container {
     int type; //the type of content
+    int id; //id of the window or split, used to identify what window is being rendered in your program
     union {
         struct split *split;
-        char **(*content)(int, int);
+        char **(*content)(int, int, int);
     };
 };
 

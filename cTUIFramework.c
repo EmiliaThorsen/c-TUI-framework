@@ -164,8 +164,8 @@ void _writeVerticalLine(char *buffer, int x, int y, int length, char ch) {
 //rendering functions
 
 
-void _contentRenderer(char *buffer, char **(*func)(int, int), int x, int y, int width, int height) {
-    char **content = func(width, height);
+void _contentRenderer(char *buffer, char **(*func)(int, int, int), int x, int y, int width, int height, int id) {
+    char **content = func(width, height, id);
     _writeTextBlock(buffer, x, y, width, height, content);
     free(content);
 }
@@ -193,14 +193,14 @@ void _splitRenderer(char *buffer, struct split split, int x, int y, int height, 
             if(split.split[region].type) {
                 _splitRenderer(buffer, *split.split[region].split, xOfset, yOfset, height, split.size[region], topBorder, theme.splitBorders);
             } else {
-                _contentRenderer(buffer, *split.split[region].content, xOfset, yOfset, height, split.size[region]);
+                _contentRenderer(buffer, *split.split[region].content, xOfset, yOfset, height, split.size[region], split.split[region].id);
             }
             xOfset += split.size[region];
         } else {
             if(split.split[region].type) {
                 _splitRenderer(buffer, *split.split[region].split, xOfset, yOfset, split.size[region], height, theme.splitBorders, sideBorder);
             } else {
-                _contentRenderer(buffer, *split.split[region].content, xOfset, yOfset, split.size[region], height);
+                _contentRenderer(buffer, *split.split[region].content, xOfset, yOfset, split.size[region], height, split.split[region].id);
             }
             yOfset += split.size[region];
         }
@@ -277,7 +277,7 @@ void renderTUI(struct TUI tuiStruct) {
     if(currentTab.content->type) {
         _splitRenderer(screen, *currentTab.content->split, EdgeMargin, tabBar, tabSize, screenCols - EdgeMargin, theme.bottomBarBorder + theme.topBarBorder, theme.sideEdgeBorder);
     } else {
-        _contentRenderer(screen, *currentTab.content->content, EdgeMargin, tabBar, tabSize, screenCols - EdgeMargin);
+        _contentRenderer(screen, *currentTab.content->content, EdgeMargin, tabBar, tabSize, screenCols - EdgeMargin, currentTab.content->id);
     }
 
     //floating window rendering
@@ -305,7 +305,7 @@ void renderTUI(struct TUI tuiStruct) {
         if(floatingWindow.type) {
             _splitRenderer(screen, *floatingWindow.split, floatingX, floatingY, floatingWidth, floatingHeight, theme.floatingWindowBorders, theme.floatingWindowBorders);
         } else {
-            _contentRenderer(screen, *floatingWindow.content, floatingX, floatingY, floatingWidth, floatingHeight);
+            _contentRenderer(screen, *floatingWindow.content, floatingX, floatingY, floatingWidth, floatingHeight, floatingWindow.id);
         }
     }
 

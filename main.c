@@ -17,7 +17,7 @@ void quit() {
     running = 0;
 }
 
-char **simpleTestContent(int width, int height) {
+char **simpleTestContent(int width, int height, int id) {
     char **content = initWindowContent(width, height, ' ');
     content[0][0] = '>';
     return content;
