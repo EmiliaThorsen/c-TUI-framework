@@ -8,8 +8,9 @@ enum {
 struct keystroke {
     char key;
     int type;
+    int id;
     union {
-        void (*function)();
+        void (*function)(int);
         struct keystrokes *recursiveKeystroke;
     };
 };

@@ -84,7 +84,7 @@ void updateTUIKeystrokes() {
                     keystrokeDisplayLength++;
                     latestKeyStrokes[keystrokeDisplayLength] = inKey;
                 } else {
-                    currentKeyStrokes.keystrokeArray[keyStroke].function();
+                    currentKeyStrokes.keystrokeArray[keyStroke].function(currentKeyStrokes.keystrokeArray[keyStroke].id);
                     keystrokeDisplayLength = 0;
                 }
                 failed = 0;
