@@ -15,6 +15,7 @@ char latestKeyStrokes[10];
 int keystrokeDisplayLength = 0;
 struct keystrokes baseKeyStrokes;
 struct keystrokes currentKeyStrokes;
+int inRecursiveKeystroke = 0;
 struct theme theme;
 
 
@@ -74,12 +75,14 @@ int pollKeyStrokes(char *array) {
 void updateTUIKeystrokes() {
     char inKeys[10];
     int inputs = pollKeyStrokes(inKeys);
+    if(!inRecursiveKeystroke) currentKeyStrokes = baseKeyStrokes;
     for(int key = 0; key < inputs; key++) {
         char inKey = inKeys[key];
         int failed = 1;
         for(int keyStroke = 0; keyStroke < currentKeyStrokes.keystorkes; keyStroke++) {
             if(inKey == currentKeyStrokes.keystrokeArray[keyStroke].key) {
                 if(currentKeyStrokes.keystrokeArray[keyStroke].type) {
+                    inRecursiveKeystroke = 1;
                     currentKeyStrokes = *currentKeyStrokes.keystrokeArray[keyStroke].recursiveKeystroke;
                     keystrokeDisplayLength++;
                     latestKeyStrokes[keystrokeDisplayLength] = inKey;
@@ -92,7 +95,7 @@ void updateTUIKeystrokes() {
             }
         }
         if(failed) {
-            currentKeyStrokes = baseKeyStrokes;
+            inRecursiveKeystroke = 0;
             keystrokeDisplayLength = 0;
         }
     }
