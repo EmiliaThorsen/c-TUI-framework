@@ -17,6 +17,8 @@ struct keystrokes baseKeyStrokes;
 struct keystrokes currentKeyStrokes;
 int inRecursiveKeystroke = 0;
 struct theme theme;
+int actionRepeatAmout = 0;
+int actionRepeatAmoutBase = 1;
 
 
 void initTUI() {
@@ -79,15 +81,23 @@ void updateTUIKeystrokes() {
     for(int key = 0; key < inputs; key++) {
         char inKey = inKeys[key];
         int failed = 1;
+        if(inKey >= '0' && inKey <= '9') {
+            actionRepeatAmout += (inKey - '0') * actionRepeatAmoutBase;
+            actionRepeatAmoutBase *= 10;
+            latestKeyStrokes[keystrokeDisplayLength] = inKey;
+            keystrokeDisplayLength++;
+            continue;
+        }
         for(int keyStroke = 0; keyStroke < currentKeyStrokes.keystorkes; keyStroke++) {
             if(inKey == currentKeyStrokes.keystrokeArray[keyStroke].key) {
                 if(currentKeyStrokes.keystrokeArray[keyStroke].type) {
                     inRecursiveKeystroke = 1;
                     currentKeyStrokes = *currentKeyStrokes.keystrokeArray[keyStroke].recursiveKeystroke;
-                    keystrokeDisplayLength++;
                     latestKeyStrokes[keystrokeDisplayLength] = inKey;
+                    keystrokeDisplayLength++;
                 } else {
-                    currentKeyStrokes.keystrokeArray[keyStroke].function(currentKeyStrokes.keystrokeArray[keyStroke].id);
+                    if(!actionRepeatAmout) actionRepeatAmout = 1;
+                    for(int i = 0; i < actionRepeatAmout; i++) currentKeyStrokes.keystrokeArray[keyStroke].function(currentKeyStrokes.keystrokeArray[keyStroke].id);
                     keystrokeDisplayLength = 0;
                 }
                 failed = 0;
@@ -97,6 +107,8 @@ void updateTUIKeystrokes() {
         if(failed) {
             inRecursiveKeystroke = 0;
             keystrokeDisplayLength = 0;
+            actionRepeatAmoutBase = 1;
+            actionRepeatAmout = 0;
         }
     }
 }
@@ -314,8 +326,8 @@ void renderTUI(struct TUI tuiStruct) {
 
     //keystroke indicator
     if(keystrokeDisplayLength) {
-        for(int ch = keystrokeDisplayLength; ch; ch--) {
-            _setChar(screen, screenCols - ch, screenRows - 1, latestKeyStrokes[ch]);
+        for(int ch = 0; ch < keystrokeDisplayLength; ch++) {
+            _setChar(screen, screenCols + ch - keystrokeDisplayLength, screenRows - 1, latestKeyStrokes[ch]);
         }
     }
 
