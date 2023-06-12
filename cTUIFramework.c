@@ -18,7 +18,6 @@ struct keystrokes currentKeyStrokes;
 int inRecursiveKeystroke = 0;
 struct theme theme;
 int actionRepeatAmout = 0;
-int actionRepeatAmoutBase = 1;
 
 
 void initTUI() {
@@ -82,8 +81,8 @@ void updateTUIKeystrokes() {
         char inKey = inKeys[key];
         int failed = 1;
         if(inKey >= '0' && inKey <= '9') {
-            actionRepeatAmout += (inKey - '0') * actionRepeatAmoutBase;
-            actionRepeatAmoutBase *= 10;
+            actionRepeatAmout *= 10;
+            actionRepeatAmout += (inKey - '0');
             latestKeyStrokes[keystrokeDisplayLength] = inKey;
             keystrokeDisplayLength++;
             continue;
@@ -99,6 +98,7 @@ void updateTUIKeystrokes() {
                     if(!actionRepeatAmout) actionRepeatAmout = 1;
                     for(int i = 0; i < actionRepeatAmout; i++) currentKeyStrokes.keystrokeArray[keyStroke].function(currentKeyStrokes.keystrokeArray[keyStroke].id);
                     keystrokeDisplayLength = 0;
+                    actionRepeatAmout = 0;
                 }
                 failed = 0;
                 break;
@@ -107,7 +107,6 @@ void updateTUIKeystrokes() {
         if(failed) {
             inRecursiveKeystroke = 0;
             keystrokeDisplayLength = 0;
-            actionRepeatAmoutBase = 1;
             actionRepeatAmout = 0;
         }
     }

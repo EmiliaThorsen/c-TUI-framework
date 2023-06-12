@@ -9,7 +9,7 @@ int testThing = 10;
 
 
 void keytestidk() {
-    testThing += 10;
+    testThing += 5;
 }
 
 
